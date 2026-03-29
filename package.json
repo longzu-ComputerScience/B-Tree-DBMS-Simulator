@@ -1,0 +1,9 @@
+{
+  "name": "btree-dbms-simulator",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "backend:reload": "python -m uvicorn --app-dir backend app.main:app --reload --reload-dir backend --port 8000",
+    "dev:all": "node scripts/dev-all.js"
+  }
+}
