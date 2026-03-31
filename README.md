@@ -1,5 +1,8 @@
 # B-Tree DBMS Simulator
 
+> **Live Demo:** [https://btree-dbms.vercel.app/](https://btree-dbms.vercel.app/)  
+> _(Frontend only — run locally with `npm run dev:all` for full functionality)_
+
 A full-stack web application that simulates a student-record database system with:
 - A **base table** storing actual student records (source of truth)
 - An **Order-3 B-Tree index** by Student ID
@@ -99,9 +102,10 @@ python -m pytest tests/ -v
 │   │   ├── OperationPanel.tsx     # Add/Delete/Search forms
 │   │   ├── HistoryLog.tsx         # Collapsible operation history
 │   │   └── SearchResults.tsx      # Search results with traversal path
-│   └── lib/
-│       ├── api.ts         # Backend API client
-│       └── types.ts       # TypeScript type definitions
+│   ├── lib/
+│   │   ├── api.ts         # Backend API client
+│   │   └── types.ts       # TypeScript type definitions
+│   └── vercel.json        # Vercel deployment configuration
 ├── User Guide/
 │   ├── User Guide.docx   # End-user guide (Vietnamese, Word format)
 │   └── explain.md         # Technical explanation (Vietnamese)
@@ -127,7 +131,7 @@ python -m pytest tests/ -v
 
 ## Demo Walkthrough
 
-1. Open the app at http://localhost:3000
+1. Open the app at http://localhost:3000 (or https://btree-dbms.vercel.app/)
 2. Click **"Load Demo"** to populate with 7 Vietnamese student records
 3. The base table, both B-Tree visualizations, and operation history populate
 4. **Hover** any individual key inside a tree node — only that key glows, and corresponding entries highlight across all views
@@ -140,8 +144,22 @@ python -m pytest tests/ -v
 
 ## Documentation
 
-- **User Guide/User Guide.docx** — Vietnamese end-user guide with setup instructions, feature walkthrough, and glossary (real Microsoft Word document)
+- **User Guide/User Guide.docx** — Vietnamese end-user guide with public URL, local setup instructions, feature walkthrough, and glossary (real Microsoft Word document)
 - **User Guide/explain.md** — Vietnamese technical deep-dive covering B-Tree algorithms, data flow, and architecture
+
+## Vercel Deployment
+
+The frontend is deployed on Vercel at **https://btree-dbms.vercel.app/**.
+
+**Required Vercel Project Settings** (Dashboard → Settings → Build & Deployment):
+| Setting | Value |
+|---------|-------|
+| Root Directory | `frontend` |
+| Framework Preset | Next.js |
+| Build Command | `npm run build` |
+| Install Command | `npm install` |
+
+> **Note:** The Vercel deployment is frontend-only. The FastAPI backend is not deployed on Vercel. API calls will show a graceful error message directing users to run locally with `npm run dev:all` for full functionality.
 
 ## Test Coverage (47 Tests)
 

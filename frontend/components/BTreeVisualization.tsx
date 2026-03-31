@@ -23,6 +23,7 @@ interface BTreeVisualizationProps {
   hoveredKeys?: string[];
   recentKeys?: string[];
   searchPath?: { keys: string[]; found: boolean }[];
+  searchedKey?: string | null;
   accentColor?: string;
   onKeyHover?: (key: string, treeType: "id" | "name") => void;
   onKeyHoverEnd?: () => void;
@@ -155,9 +156,9 @@ function BTreeCustomNode({ data }: NodeProps<Node<BTreeNodeData>>) {
   let nodeShadow = "0 2px 8px rgba(0,0,0,0.3)";
   let nodeBg = "#1e293b";
 
-  if (anyKeySearchHit || (searchVisited && anyKeySearchHit)) {
+  if (anyKeySearchHit) {
     borderColor = "#10b981";
-    nodeShadow = "0 0 16px rgba(16,185,129,0.3)";
+    nodeShadow = "0 0 12px rgba(16,185,129,0.25)";
     nodeBg = "#0c3a2a";
   } else if (searchVisited) {
     borderColor = "#f59e0b";
@@ -275,6 +276,7 @@ export default function BTreeVisualization({
   hoveredKeys = [],
   recentKeys = [],
   searchPath = [],
+  searchedKey = null,
   accentColor = "#6366f1",
   onKeyHover,
   onKeyHoverEnd,
@@ -286,9 +288,11 @@ export default function BTreeVisualization({
     }
 
     const searchPathSet = new Set(searchPath.map((p) => JSON.stringify(p.keys)));
+
+    // Only the exact searched key gets the "found" highlight, not all keys in the node
     const searchHitKeys: string[] = [];
-    for (const p of searchPath) {
-      if (p.found) searchHitKeys.push(...p.keys);
+    if (searchedKey && searchPath.some((p) => p.found)) {
+      searchHitKeys.push(searchedKey);
     }
 
     const { nodes: layoutNodes, edges: layoutEdges } = buildLayout(tree, searchPathSet);
@@ -358,7 +362,7 @@ export default function BTreeVisualization({
     });
 
     return { flowNodes, flowEdges };
-  }, [tree, highlightKeys, hoveredKeys, recentKeys, searchPath, accentColor, treeType, onKeyHover, onKeyHoverEnd]);
+  }, [tree, highlightKeys, hoveredKeys, recentKeys, searchPath, searchedKey, accentColor, treeType, onKeyHover, onKeyHoverEnd]);
 
   const containerHeight = compact ? "h-[200px]" : "h-[320px]";
 

@@ -2,9 +2,18 @@
 
 import type { SystemState, MutationResponse, SearchResult } from "./types";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (typeof window !== "undefined" && window.location.hostname !== "localhost"
+    ? "" // In production without a configured backend URL, API calls will fail gracefully
+    : "http://localhost:8000/api");
 
 async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
+  if (!API_BASE) {
+    throw new Error(
+      "Backend not available. This deployment is frontend-only. Please run the project locally with: npm run dev:all"
+    );
+  }
   const res = await fetch(url, {
     ...options,
     headers: { "Content-Type": "application/json", ...options?.headers },

@@ -21,6 +21,11 @@ export default function Home() {
   const [highlightIdKeys, setHighlightIdKeys] = useState<string[]>([]);
   const [highlightNameKeys, setHighlightNameKeys] = useState<string[]>([]);
 
+  // Search path visualization (time-limited, separate from searchResult display)
+  const [activeSearchPath, setActiveSearchPath] = useState<{ keys: string[]; found: boolean }[]>([]);
+  const [searchedKey, setSearchedKey] = useState<string | null>(null);
+  const [searchTreeType, setSearchTreeType] = useState<"id" | "name" | null>(null);
+
   // Cross-highlighting hover state (instantaneous, driven by mouse)
   const [hoveredStudentIds, setHoveredStudentIds] = useState<string[]>([]);
 
@@ -92,6 +97,9 @@ export default function Home() {
       setHighlightIds([]);
       setHighlightIdKeys([]);
       setHighlightNameKeys([]);
+      setActiveSearchPath([]);
+      setSearchedKey(null);
+      setSearchTreeType(null);
     }, 3000);
   }, []);
 
@@ -140,6 +148,9 @@ export default function Home() {
       setError(null);
       setSuccessMsg(null);
       setSearchResult(null);
+      setActiveSearchPath([]);
+      setSearchedKey(null);
+      setSearchTreeType(null);
       try {
         const res = await api.addStudent(id, name, gender);
         setState(res.state);
@@ -164,6 +175,9 @@ export default function Home() {
     setError(null);
     setSuccessMsg(null);
     setSearchResult(null);
+    setActiveSearchPath([]);
+    setSearchedKey(null);
+    setSearchTreeType(null);
     try {
       // Mark the ID as deleted for animation before the state updates
       setDeletedIds([id]);
@@ -192,6 +206,9 @@ export default function Home() {
       try {
         const res = await api.searchById(id);
         setSearchResult(res);
+        setActiveSearchPath(res.search_path || []);
+        setSearchedKey(id);
+        setSearchTreeType("id");
         setHighlightIdKeys([id]);
         setHighlightNameKeys([]);
         if (res.found && res.students.length > 0) {
@@ -216,6 +233,9 @@ export default function Home() {
       try {
         const res = await api.searchByName(name);
         setSearchResult(res);
+        setActiveSearchPath(res.search_path || []);
+        setSearchedKey(name);
+        setSearchTreeType("name");
         setHighlightNameKeys([name]);
         setHighlightIdKeys([]);
         if (res.found && res.students.length > 0) {
@@ -237,6 +257,9 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setSearchResult(null);
+    setActiveSearchPath([]);
+    setSearchedKey(null);
+    setSearchTreeType(null);
     try {
       const res = await api.seed();
       setState(res);
@@ -252,6 +275,9 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setSearchResult(null);
+    setActiveSearchPath([]);
+    setSearchedKey(null);
+    setSearchTreeType(null);
     try {
       const res = await api.reset();
       setState(res);
@@ -337,7 +363,7 @@ export default function Home() {
               <div className="px-4 py-3 space-y-2.5 text-[11px] leading-relaxed text-slate-500">
                 <p>
                   <span className="text-indigo-400/80">●</span>{" "}
-                  Di chuột vào <span className="text-slate-300">từng key</span> trong cây để highlight bản ghi tương ứng ở bảng và cây còn lại.
+                  Di chuột vào <span className="text-slate-300">từng dòng</span> trong bảng để highlight các key tương ứng.
                 </p>
                 <p>
                   <span className="text-violet-400/80">●</span>{" "}
@@ -381,7 +407,8 @@ export default function Home() {
                 highlightKeys={highlightIdKeys}
                 hoveredKeys={hoveredIdKeys}
                 recentKeys={recentlyAddedIds}
-                searchPath={searchResult?.search_path}
+                searchPath={searchTreeType === "id" ? activeSearchPath : []}
+                searchedKey={searchTreeType === "id" ? searchedKey : null}
                 accentColor="#6366f1"
                 onKeyHover={handleKeyHover}
                 onKeyHoverEnd={handleKeyHoverEnd}
@@ -399,6 +426,8 @@ export default function Home() {
                         .filter((n): n is string => !!n)
                     : []
                 }
+                searchPath={searchTreeType === "name" ? activeSearchPath : []}
+                searchedKey={searchTreeType === "name" ? searchedKey : null}
                 accentColor="#8b5cf6"
                 onKeyHover={handleKeyHover}
                 onKeyHoverEnd={handleKeyHoverEnd}
