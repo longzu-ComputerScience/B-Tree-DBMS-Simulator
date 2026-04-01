@@ -1,3 +1,135 @@
+SƠ ĐỒ KHỞI ĐỘNG BACKEND
+
+uvicorn app.main:app
+        |
+        v
+main.py
+  - tạo FastAPI app
+  - import router, db từ routes.py
+        |
+        v
+routes.py
+  - tạo db = Database()
+        |
+        v
+database.py
+  - tạo:
+    + base_table
+    + id_index = BTree()
+    + name_index = BTree()
+    + history
+        |
+        v
+main.py startup lifespan
+        |
+        v
+storage.load_state(db)
+  - nếu có file JSON thì nạp dữ liệu cũ vào db
+        |
+        v
+Backend sẵn sàng nhận request
+
+--------------------------------------------------------------------
+
+SƠ ĐỒ TỔNG THỂ REQUEST
+
+Frontend
+  |
+  | HTTP request (/api/...)
+  v
+main.py
+  |
+  | app.include_router(router, prefix="/api")
+  v
+routes.py
+  |
+  | gọi hàm nghiệp vụ
+  v
+database.py   <- file điều phối chính
+  | \
+  |  \
+  |   +--> btree.py
+  |        - search
+  |        - insert
+  |        - delete
+  |
+  +--> cập nhật base_table / history
+  |
+  +--> storage.py
+           - save_state() nếu có thay đổi dữ liệu
+  |
+  v
+routes.py
+  - bọc kết quả thành JSON response
+  v
+Frontend nhận dữ liệu và render lại
+
+---------------------------------------------------------
+
+SƠ ĐỒ THÊM SINH VIÊN
+
+Frontend
+  -> POST /api/students
+  -> routes.py:add_student()
+  -> database.py:add_student()
+       1. kiểm tra trùng student_id
+       2. thêm vào base_table
+       3. id_index.insert(...)      -> btree.py
+       4. name_index.search/insert  -> btree.py
+       5. tạo operation record
+       6. thêm history
+  -> routes.py:_persist()
+  -> storage.py:save_state(...)
+  -> routes.py trả MutationResponse
+  -> Frontend setState(res.state)
+
+----------------------------------------------------------------
+
+SƠ ĐỒ XOÁ SINH VIÊN
+
+Frontend
+  -> DELETE /api/students/{id}
+  -> routes.py:delete_student()
+  -> database.py:delete_student()
+       1. kiểm tra id có tồn tại không
+       2. xoá khỏi base_table
+       3. id_index.delete(...)      -> btree.py
+       4. tìm bucket tên, xoá id
+       5. nếu bucket rỗng thì name_index.delete(...) -> btree.py
+       6. thêm history
+  -> storage.py:save_state(...)
+  -> trả MutationResponse
+  -> Frontend render state mới
+
+--------------------------------------------------------------
+
+SƠ ĐỒ TÌM KIẾM
+
+Theo ID:
+Frontend
+  -> GET /api/students/search/by-id/{id}
+  -> routes.py:search_by_id()
+  -> database.py:search_by_id()
+       1. id_index.get_search_path(...) -> btree.py
+       2. id_index.search(...)          -> btree.py
+       3. tra tiếp base_table
+  -> trả SearchResult
+  -> Frontend hiển thị search path + kết quả
+
+Theo tên:
+Frontend
+  -> GET /api/students/search/by-name?name=...
+  -> routes.py:search_by_name()
+  -> database.py:search_by_name()
+       1. name_index.get_search_path(...) -> btree.py
+       2. name_index.search(...)          -> btree.py
+       3. bucket [student_id,...] -> đổi ra list Student từ base_table
+  -> trả SearchResult
+
+
+----------------------------------------------------------------
+
+
 # B-Tree DBMS Simulator — Giải Thích Kỹ Thuật
 
 ## Tổng Quan
